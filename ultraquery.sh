@@ -1,23 +1,42 @@
-
 #!/bin/bash
-TOOL=$1
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[0;37m'
+RESET='\033[0m'
+# 
+MODULE="$1"
 shift
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TOOL_PATH="$SCRIPT_DIR/modules/${TOOL}.sh"
-if [[ -z "$TOOL" || "$TOOL" == "--help" ]]; then
-    echo "Usage: ultraquery <module> [options]"
-    echo ""
-    echo "Available modules:"
-    for file in "$SCRIPT_DIR/modules/"*.sh; do
-        echo "  $(basename "$file" .sh)"
-    done
-    exit 0
-fi
+MODULE_PATH="$SCRIPT_DIR/modules/${MODULE}.sh"
 
-if [[ ! -f "$TOOL_PATH" ]]; then
-    echo "[!] Unknown module: $TOOL"
-    echo "Run: ultraquery --help"
-    exit 1
-fi
-bash "$TOOL_PATH" "$@"
+
+function banner () {
+    echo "  Weekeyv@ v0.1"
+}
+
+
+function main () {
+    banner
+    if [[ -f "$MODULE_PATH" ]]; then
+        bash "$MODULE_PATH" "$@"
+    else
+        echo -e " ${RED} Modules${RESET}"
+
+        echo "      endp    Extract URLs with specifie extensions"
+        exit 1
+    fi
+
+}
+main
+
+
+
+
+
+
 

@@ -27,14 +27,12 @@ function main () {
     else
         echo -e " ${RED} Modules${RESET}"
 
-        echo "      endp    Extract URLs with specifie extensions"
+        echo "  endp    Extract URLs with specifie extensions"
         exit 1
     fi
 
 }
 main
-
-
 
 
 

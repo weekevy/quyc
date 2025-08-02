@@ -26,8 +26,8 @@ function main () {
         bash "$MODULE_PATH" "$@"
     else
         echo -e " ${RED} Modules${RESET}"
-
-        echo "  endp    Extract URLs with specifie extensions"
+        echo ""
+        echo "  gex    extracting tool"
         exit 1
     fi
 

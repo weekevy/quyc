@@ -29,6 +29,7 @@ function show_help() {
     echo ""
     exit 0
 }
+echo ""
 
 function show_module_error() {
     banner

@@ -35,14 +35,62 @@ if [[ $# -eq 0 || "$1" == "--help" ]]; then
   exit 0
 fi
 
-
-
 case "$1" in
     --api)
+        echo "You are using API module"
         shift
+        case "$1" in
+            -f)
+                if [ ! -f "$2" ]; then
+                    echo "Error: there is no file"
+                    exit 1
+                fi
+                FILE_PATH="$2"
+                # /////////////////////////////////// 
+                #                                 
+                #
+                # /////////////////////////////////// 
+                shift 2 
+                ;;
+            -d)
+                if [ ! -d "$2" ]; then
+                    echo "Error: there is not directory"
+                    exit 1
+                fi
+                DIRECTORY_PATH="$2"
+                # /////////////////////////////////// 
+                #
+                #
+                # /////////////////////////////////// 
+                shift 2
+                ;;
+            *)
+                echo "no target "
+                exit 1 
+                ;;
+        esac
         ;;
     --param)
+        echo "You are using PARAM module"
         shift
+        case "$1" in
+            -f)
+                echo "you are testinve file"
+                shift
+                ;;
+            -d)
+                echo "you are testing for recusive directory"
+                shift
+                ;;
+            *)
+                echo "no target "
+                exit 1 
+                ;;
+        esac
+        ;;
+    *)
+        echo "No Module with this name"
+        exit 1
         ;;
 esac
 

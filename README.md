@@ -1,2 +1,2 @@
-# ultraquery
+# quyc
 #

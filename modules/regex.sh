@@ -16,7 +16,50 @@ RESET='\033[0m'
 #
 #
 #
+
+getQuery () {
+    local file=$1
+    cat "$file" | grep "?"
+
+}
+
+
 API_REGEX="$(dirname "${BASH_SOURCE[0]}")/../regex/api_regex.json"
+scanRegex_file () {
+    local target_file="$1"
+    keys=$(jq -r 'keys[]' "$API_REGEX")
+    for key in $keys; do
+        regex=$(jq -r --arg k "$key" '.[$k]' "$API_REGEX")
+        matches=$(grep -oP "$regex" "$target_file" | sort -u)
+        if [[ -n "$matches" ]]; then
+            echo -e "Matches for ${RED}[$key]:${RESET}"
+            echo "$matches" | sed 's/^/    |-> /'
+        fi
+    done
+}
+
+scanRegex_dir() {
+    local target="$1"
+
+    if [[ -d "$target" ]]; then
+        for item in "$target"/*; do
+            scanRegex_file "$item"
+        done
+    elif [[ -f "$target" ]]; then
+        # If it's a file, process it
+        keys=$(jq -r 'keys[]' "$API_REGEX")
+        for key in $keys; do
+            regex=$(jq -r --arg k "$key" '.[$k]' "$API_REGEX")
+            matches=$(grep -oP "$regex" "$target" | sort -u)
+            if [[ -n "$matches" ]]; then
+                echo -e "Matches for ${RED}[$key]${RESET} in ${CYAN}$target${RESET}:"
+                echo "$matches" | sed 's/^/    |-> /'
+            fi
+        done
+    fi
+}
+
+
 
 if [[ $# -eq 0 || "$1" == "--help" ]]; then
   echo -e "${YELLOW}  Usage: ./quevy regex [--module] <target> ${RESET}"
@@ -24,8 +67,7 @@ if [[ $# -eq 0 || "$1" == "--help" ]]; then
 
   echo -e "${MAGENTA}  [options]${RESET}"
   echo "  --api     check for existed regex in file" 
-  echo "  --param   filter url by vuln pattren using url query param"
-  echo "            lfi, sqli, xss, redirect, ssrf, ssti, takeover, idor, "
+  echo "  --param   extract url that contain parameter"
 
   echo -e "${MAGENTA}  [target]${RESET}"
   echo -e "  -f <file>      Search specific file"
@@ -47,8 +89,7 @@ case "$1" in
                 fi
                 FILE_PATH="$2"
                 # /////////////////////////////////// 
-                #                                 
-                #
+                scanRegex_file "$FILE_PATH"
                 # /////////////////////////////////// 
                 shift 2 
                 ;;
@@ -59,8 +100,11 @@ case "$1" in
                 fi
                 DIRECTORY_PATH="$2"
                 # /////////////////////////////////// 
-                #
-                #
+                if [[ "$DIRECTORY_PATH" == "." ]]; then
+                    scanRegex_dir "$(pwd)"
+                fi
+                scanRegex_dir "$DIRECTORY_PATH"                                
+                
                 # /////////////////////////////////// 
                 shift 2
                 ;;
@@ -75,12 +119,27 @@ case "$1" in
         shift
         case "$1" in
             -f)
-                echo "you are testinve file"
-                shift
+                if [ ! -f "$2" ]; then
+                    echo "Error: there is no file"
+                    exit 1
+                fi
+                FILE_PATH="$2"
+                # /////////////////////////////////// 
+                getQuery "$FILE_PATH"                
+                # /////////////////////////////////// 
+                shift 2 
                 ;;
             -d)
-                echo "you are testing for recusive directory"
-                shift
+                if [ ! -d "$2" ]; then
+                    echo "Error: there is no directory"
+                    exit 1
+                fi
+                DIRECTORY_PATH="$2"
+                if [ "$DIRECTORY_PATH" ]]; then
+                    echo "Hello"
+                fi
+                # do some shit over here
+                shift 2
                 ;;
             *)
                 echo "no target "
@@ -96,18 +155,6 @@ esac
 
 
 
-function scanRegex_file () {
-    local target_file="$1"
-    keys=$(jq -r 'keys[]' "$API_REGEX")
-    for key in $keys; do
-        regex=$(jq -r --arg k "$key" '.[$k]' "$API_REGEX")
-        matches=$(grep -oP "$regex" "$target_file" | sort -u)
-        if [[ -n "$matches" ]]; then
-            echo -e "Matches for ${RED}[$key]:${RESET}"
-            echo "$matches" | sed 's/^/-> /'
-        fi
-    done
-}
 
 
 

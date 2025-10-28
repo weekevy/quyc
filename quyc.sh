@@ -23,8 +23,11 @@ function show_help() {
     echo ""
     echo -e "${RED}  Modules${RESET}"
     echo ""
-    echo "  regex        Search various regex in different file types"
-    echo "  extract      Extract data in various forms [url directory path, subdomain contact]"
+
+    echo "  js       JavaScript tools pack"
+    echo "  urls     Urls tools pack"
+    echo "  reg      Extract specific things with using regular expression"
+
     echo ""
     echo ""
     exit 0
@@ -35,8 +38,11 @@ function show_module_error() {
     banner
     echo ""
     echo -e "${RED}  Modules${RESET}"
-    echo "  regex    -  Search for patterns in files"
-    echo "  extract  -  Extract specific data"
+
+    echo "  js      JavaScript tools pack"
+    echo "  urls    Urls tools pack"
+    echo "  reg     Extract specific things with using regular expression"
+
     echo ""
     echo -e "  ${BOLD}no module selected ${RESET}"
     echo "  -h, --help     show help message"

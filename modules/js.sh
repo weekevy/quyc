@@ -66,20 +66,21 @@ if [[ $# -eq 0 || "$1" == "--help" ]]; then
     
 
   echo -e "${MAGENTA}  [options]${RESET}"
-  echo "  --api     check for existed regex in file" 
-  echo "  --param   extract url that contain parameter"
+  echo "  --secrets     check for existed regex in file" 
+  echo "  --juicy       Can contain juicy information"
 
   echo -e "${MAGENTA}  [target]${RESET}"
-  echo -e "  -f <file>      Search specific file"
-  echo -e "  -d <directory> Search directory recursively"  
-  echo -e "  -d .           Current directory"
+  echo -e "  -url <url>        JavaScript endpoint extract"
+  echo -e "  -f   <file>       Search specific file"
+  echo -e "  -d   <directory>  Search directory recursively"  
+  echo -e "  -d .              Current directory"
 
   exit 0
 fi
 
 case "$1" in
-    --api)
-        echo "You are using API module"
+    --secrets)
+        echo "You are using [js] module"
         shift
         case "$1" in
             -f)
@@ -102,10 +103,23 @@ case "$1" in
                 # /////////////////////////////////// 
                 if [[ "$DIRECTORY_PATH" == "." ]]; then
                     scanRegex_dir "$(pwd)"
+
                 fi
                 scanRegex_dir "$DIRECTORY_PATH"                                
                 
                 # /////////////////////////////////// 
+                shift 2
+                ;;
+            
+            -url)
+                URL=$2
+                if [[ $URL =~ ^https?://.*\.js$ ]]; then
+                # /////////////////////////////////// 
+                 
+                # /////////////////////////////////// 
+                else
+                    echo "Wrong url form !"
+                fi
                 shift 2
                 ;;
             *)
@@ -114,7 +128,7 @@ case "$1" in
                 ;;
         esac
         ;;
-    --param)
+    --juicy)
         echo "You are using PARAM module"
         shift
         case "$1" in

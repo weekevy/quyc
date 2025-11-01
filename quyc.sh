@@ -31,6 +31,7 @@ function show_help() {
     echo ""
     echo ""
     exit 0
+    echo "" 
 }
 echo ""
 

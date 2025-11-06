@@ -1,0 +1,5 @@
+{
+  "api_paths": "(/|/api|/v1|/v2|/v3|/graphql)[a-zA-Z0-9_/.-]*",
+  "hashes": "[a-fA-F0-9]{32,}",
+  "critical_info": "(?i)(access_key|secret_key|api_key|token|password|auth)"
+}

@@ -25,39 +25,90 @@ getQuery () {
 
 
 API_REGEX="$(dirname "${BASH_SOURCE[0]}")/../regex/api_regex.json"
+get_severity_color() {
+    local key=$1
+    case "$key" in
+        google_api|firebase|amazon_aws_access_key_id|amazon_mws_auth_toke|facebook_access_token|authorization_basic|authorization_bearer|authorization_api|mailgun_api_key|twilio_api_key|twilio_account_sid|twilio_app_sid|paypal_braintree_access_token|square_oauth_secret|square_access_token|stripe_standard_api|stripe_restricted_api|github_access_token|SSH_privKey|Heroku API KEY|possible_Creds)
+            echo -e "${RED}"  # High severity
+            ;;
+        json_web_token|slack_token)
+            echo -e "${YELLOW}" # Medium severity
+            ;;
+        *)
+            echo -e "${BLUE}"    # Informational
+            ;;
+    esac
+}
+
+print_match() {
+    local key=$1
+    local matches=$2
+    local file=$3
+    local severity_color=$(get_severity_color "$key")
+
+    if [[ -n "$matches" ]]; then
+        echo -e "  ${severity_color}[+]${RESET} ${CYAN}Matches for ${severity_color}[$key]${RESET} in ${GREEN}$file${RESET}:"
+        echo "$matches" | sed "s/^/    ${severity_color}|->${RESET} /"
+    fi
+}
+
 scanRegex_file () {
     local target_file="$1"
+    local total_matches=0
+    local findings=""
+
+    API_REGEX="$(dirname "${BASH_SOURCE[0]}")/../regex/api_regex.json"
+    PATHS_REGEX="$(dirname "${BASH_SOURCE[0]}")/../regex/paths_regex.json"
+
     keys=$(jq -r 'keys[]' "$API_REGEX")
     for key in $keys; do
         regex=$(jq -r --arg k "$key" '.[$k]' "$API_REGEX")
         matches=$(grep -oP "$regex" "$target_file" | sort -u)
         if [[ -n "$matches" ]]; then
-            echo -e "Matches for ${RED}[$key]:${RESET}"
-            echo "$matches" | sed 's/^/    |-> /'
+            findings+="$(print_match "$key" "$matches" "$target_file")\n"
+            total_matches=$((total_matches + $(echo "$matches" | wc -l)))
         fi
     done
+
+    keys=$(jq -r 'keys[]' "$PATHS_REGEX")
+    for key in $keys; do
+        regex=$(jq -r --arg k "$key" '.[$k]' "$PATHS_REGEX")
+        matches=$(grep -oP "$regex" "$target_file" | sort -u)
+        if [[ -n "$matches" ]]; then
+            findings+="$(print_match "$key" "$matches" "$target_file")\n"
+            total_matches=$((total_matches + $(echo "$matches" | wc -l)))
+        fi
+    done
+
+    if [[ $total_matches -gt 0 ]]; then
+        echo -e "${BLUE}[*]${RESET} Scanning file: ${GREEN}$target_file${RESET}"
+        echo -e "$findings"
+        echo -e "${BLUE}[*]${RESET} Scan complete for file: ${GREEN}$target_file${RESET}"
+        echo -e "${BLUE}[*]${RESET} Total matches found: ${RED}$total_matches${RESET}"
+    fi
 }
 
 scanRegex_dir() {
     local target="$1"
+    local total_files=0
 
     if [[ -d "$target" ]]; then
+        echo -e "${BLUE}[*]${RESET} Scanning directory: ${GREEN}$target${RESET}"
         for item in "$target"/*; do
-            scanRegex_file "$item"
-        done
-    elif [[ -f "$target" ]]; then
-        # If it's a file, process it
-        keys=$(jq -r 'keys[]' "$API_REGEX")
-        for key in $keys; do
-            regex=$(jq -r --arg k "$key" '.[$k]' "$API_REGEX")
-            matches=$(grep -oP "$regex" "$target" | sort -u)
-            if [[ -n "$matches" ]]; then
-                echo -e "Matches for ${RED}[$key]${RESET} in ${CYAN}$target${RESET}:"
-                echo "$matches" | sed 's/^/    |-> /'
+            if [[ -f "$item" ]]; then
+                scanRegex_file "$item"
+                total_files=$((total_files + 1))
             fi
         done
+        echo -e "${BLUE}[*]${RESET} Scan complete for directory: ${GREEN}$target${RESET}"
+        echo -e "${BLUE}[*]${RESET} Total files scanned: ${RED}$total_files${RESET}"
+    elif [[ -f "$target" ]]; then
+        scanRegex_file "$target"
     fi
 }
+
+
+
 
 
 
@@ -77,6 +128,7 @@ if [[ $# -eq 0 || "$1" == "--help" ]]; then
 
   exit 0
 fi
+
 
 case "$1" in
     --secrets)
